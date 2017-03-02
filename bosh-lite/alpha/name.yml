@@ -1,0 +1,7 @@
+---
+name: bosh-lite-alpha-shield
+meta:
+  type: shield
+  site: bosh-lite
+  env:  alpha
+  vault_prefix: secret/bosh-lite/alpha/shield

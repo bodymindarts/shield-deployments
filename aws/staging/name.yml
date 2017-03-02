@@ -1,0 +1,7 @@
+---
+name: aws-staging-shield
+meta:
+  type: shield
+  site: aws
+  env:  staging
+  vault_prefix: secret/aws/staging/shield
