@@ -1,0 +1,17 @@
+---
+networks:
+  - name: shield
+    subnets:
+      - range:    10.4.2.0/24
+        gateway:  10.4.2.1
+        dns:     [10.4.0.2]
+        cloud_properties:
+          subnet: subnet-e5fde881  # <--- your AWS Subnet ID
+          security_groups: [wide-open]
+        reserved:
+          - 10.4.2.2 - 10.4.2.3    # Amazon reserves these
+          - 10.4.2.4 - 10.4.2.31   # Allocated to other deployments
+            # SHIELD is in 10.4.2.32/28
+          - 10.4.2.48 - 10.4.2.254 # Allocated to other deployments
+        static:
+          - 10.4.2.32 - 10.4.2.34

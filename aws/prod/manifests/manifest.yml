@@ -1,0 +1,118 @@
+compilation:
+  cloud_properties:
+    availability_zone: eu-west-1b
+    ephemeral_disk:
+      size: 8192
+      type: gp2
+    instance_type: m3.large
+  network: shield
+  reuse_compilation_vms: true
+  workers: 4
+director_uuid: 39b7432c-3396-4f17-a5cb-d6638108fe4a
+disk_pools: []
+jobs:
+- instances: 1
+  name: shield
+  networks:
+  - name: shield
+    static_ips:
+    - 10.4.2.32
+  persistent_disk: 2048
+  resource_pool: small
+  templates:
+  - name: postgres
+    release: shield
+  - name: shield-daemon
+    release: shield
+  - name: shield-agent
+    release: shield
+  - name: agent-pgtools
+    release: shield
+  - name: nginx
+    release: shield
+  - name: toolbelt
+    release: toolbelt
+  - name: toolbelt-quick
+    release: toolbelt
+name: aws-prod-shield
+networks:
+- name: shield
+  subnets:
+  - cloud_properties:
+      security_groups:
+      - wide-open
+      subnet: subnet-e5fde881
+    dns:
+    - 10.4.0.2
+    gateway: 10.4.2.1
+    range: 10.4.2.0/24
+    reserved:
+    - 10.4.2.2 - 10.4.2.3
+    - 10.4.2.4 - 10.4.2.31
+    - 10.4.2.48 - 10.4.2.254
+    static:
+    - 10.4.2.32 - 10.4.2.34
+  type: manual
+properties:
+  databases:
+    address: 10.4.2.32
+    databases:
+    - citext: true
+      name: shielddb
+      tag: shield
+    - citext: true
+      name: sessionsdb
+      tag: sessions
+    db_scheme: postgres
+    port: 5524
+    roles:
+    - name: shieldadmin
+      password: REDACTED
+      tag: admin
+    - name: shieldsessions
+      password: REDACTED
+      tag: sessions
+  shield:
+    agent:
+      autoprovision: https://10.4.2.32
+    daemon:
+      auth:
+        api_keys:
+          autoprovision: REDACTED
+        basic_password: REDACTED
+        basic_user: shield
+      database:
+        db: shielddb
+        host: 10.4.2.32
+        password: REDACTED
+        port: 5524
+        type: postgres
+        username: shieldadmin
+      domain: 10.4.2.32
+      name: REDACTED
+      ssh_private_key: REDACTED
+    provisioning_key: REDACTED
+releases:
+- name: shield
+  version: 6.4.2
+- name: toolbelt
+  version: 3.2.10
+resource_pools:
+- cloud_properties:
+    availability_zone: eu-west-1b
+    ephemeral_disk:
+      size: 4096
+      type: gp2
+    instance_type: m3.medium
+  name: small
+  network: shield
+  stemcell:
+    name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
+    version: latest
+update:
+  canaries: 1
+  canary_watch_time: 3000-120000
+  max_in_flight: 50
+  serial: false
+  update_watch_time: 3000-120000
+

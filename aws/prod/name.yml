@@ -1,0 +1,7 @@
+---
+name: aws-prod-shield
+meta:
+  type: shield
+  site: aws
+  env:  prod
+  vault_prefix: secret/aws/prod/shield

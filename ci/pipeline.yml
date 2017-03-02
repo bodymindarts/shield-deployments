@@ -1,6 +1,8 @@
 groups:
 - jobs:
   - stemcells
+  - aws-prod
+  - aws-prod-notif
   - aws-staging
   - bosh-lite-alpha
   name: '*'
@@ -17,6 +19,8 @@ groups:
 - jobs:
   - bosh-lite-alpha
   - aws-staging
+  - aws-prod
+  - aws-prod-notif
   name: aws
 jobs:
 - name: stemcells
@@ -54,6 +58,69 @@ jobs:
         - stemcells
         path: git/bin/genesis
     task: update
+  - params:
+      rebase: true
+      repository: out/git
+    put: git
+  public: true
+  serial: true
+- name: aws-prod
+  plan:
+  - aggregate:
+    - get: world-changes
+      passed:
+      - aws-prod-notif
+      resource: aws-β-changes
+      trigger: false
+    - get: local-changes
+      passed:
+      - aws-prod-notif
+      resource: aws-prod-changes
+      trigger: false
+  - config:
+      image_resource:
+        source:
+          repository: starkandwayne/concourse
+          tag: latest
+        type: docker-image
+      inputs:
+      - name: world-changes
+      - name: local-changes
+      outputs:
+      - name: out
+      params:
+        CI_BOSHES: |
+          aliases:
+            target:
+              2b8bb4b6-1bca-41f2-8c51-0bb3223c0622: https://10.4.1.80:25555
+              39b7432c-3396-4f17-a5cb-d6638108fe4a: https://10.4.1.4:25555
+          auth:
+            https://10.4.1.4:25555:
+              password: REDACTED
+              username: admin
+            https://10.4.1.80:25555:
+              password: REDACTED
+              username: admin
+        CI_BRANCH: master
+        CI_PIPELINE: ""
+        CI_PRIVATE_KEY: REDACTED
+        CI_SITE_ENV: aws/prod
+        CI_VAULT_APP_ID: concourse
+        CI_VAULT_USER_ID: shield-pipeline
+        CI_WAIT_FOR_CLEAN_BOSH: false
+        LOCAL_CHANGES: local-changes
+        VAULT_ADDR: https://10.4.1.16:8200
+        VAULT_SKIP_VERIFY: 1
+        WORKING_DIR: out/git
+        WORLD_CHANGES: world-changes
+      platform: linux
+      run:
+        args:
+        - ci
+        - stage1
+        path: world-changes/bin/genesis
+    tags: null
+    task: aws-prod
   - params:
       rebase: true
       repository: out/git
@@ -180,10 +247,65 @@ jobs:
     put: α-changes
   public: true
   serial: true
+- name: aws-prod-notif
+  plan:
+  - aggregate:
+    - get: world-changes
+      passed:
+      - aws-staging
+      resource: aws-β-changes
+      trigger: true
+    - get: local-changes
+      resource: aws-prod-changes
+      trigger: true
+  - config:
+      image_resource:
+        source:
+          repository: starkandwayne/concourse
+          tag: latest
+        type: docker-image
+      inputs:
+      - name: world-changes
+      - name: local-changes
+      outputs:
+      - name: out
+      params:
+        CI_SITE_ENV: aws/prod
+        DRAFT_FILE: out/notif
+        LOCAL_CHANGES: local-changes
+        WORLD_CHANGES: world-changes
+      platform: linux
+      run:
+        args:
+        - ci
+        - draft-message
+        path: world-changes/bin/genesis
+    tags: null
+    task: draft-message
+  - params:
+      channel: '#name'
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      text_file: out/notif
+      username: runwaybot
+    put: notification
+resource_types:
+- name: slack-notification
+  source:
+    repository: cfcommunity/slack-notification-resource
+  type: docker-image
 resources:
 - name: git
   source:
     branch: master
+    private_key: REDACTED
+    uri: git@github.com:bodymindarts/shield-deployments
+  type: git
+- name: aws-prod-changes
+  source:
+    branch: master
+    paths:
+    - aws/prod
+    - aws/prod/*.yml
     private_key: REDACTED
     uri: git@github.com:bodymindarts/shield-deployments
   type: git
@@ -233,6 +355,10 @@ resources:
     private_key: REDACTED
     uri: git@github.com:bodymindarts/shield-deployments
   type: git
+- name: notification
+  source:
+    url: https://slack/web/hook/url
+  type: slack-notification
 - name: aws-hvm-stemcell
   source:
     name: bosh-aws-xen-hvm-ubuntu-trusty-go_agent
