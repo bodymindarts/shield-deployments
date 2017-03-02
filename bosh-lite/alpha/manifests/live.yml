@@ -108,7 +108,7 @@ releases:
 - name: shield
   version: 6.4.2
 - name: toolbelt
-  version: 3.2.10
+  version: 3.3.2
 resource_pools:
 - cloud_properties: {}
   name: shield
