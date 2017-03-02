@@ -6,7 +6,7 @@ networks:
         gateway:  10.4.2.1
         dns:     [10.4.0.2]
         cloud_properties:
-          subnet: subnet-e5fde881  # <--- your AWS Subnet ID
+          subnet: subnet-a4111bd2  # <--- your AWS Subnet ID
           security_groups: [wide-open]
         reserved:
           - 10.4.2.2 - 10.4.2.3    # Amazon reserves these
