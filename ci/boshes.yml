@@ -1,0 +1,15 @@
+---
+# BOSH directors are specified by `url: username / password`
+# (just like in ~/.bosh_config's auth section), i.e.:
+#
+aliases:
+  target:
+    2b8bb4b6-1bca-41f2-8c51-0bb3223c0622: https://10.4.1.80:25555
+    39b7432c-3396-4f17-a5cb-d6638108fe4a: https://10.4.1.4:25555
+auth:
+  https://10.4.1.4:25555:
+    username: admin
+    password: (( vault "secret/aws/proto/bosh/users/admin:password" ))
+  https://10.4.1.80:25555:
+    username: admin
+    password: (( vault "secret/aws/alpha/bosh-lite/users/admin:password" ))

@@ -1,0 +1,39 @@
+---
+meta:
+  # This is the name of your pipeline
+  name: shield
+
+  # Should genesis wait for existing BOSH tasks to complete prior to deploying?
+  # This should be set to 'true' for any pipelines that deploy/update BOSH itself
+  pause_for_existing_bosh_tasks: false
+
+  # This is where you set your visibility of the pipeline
+  public_pipeline: true # set to true or false
+
+  # This is the name of your fly target
+  target: proto
+
+  # A map of name:value environment variables
+  # that will be made available to the script
+  env:
+    VAULT_ADDR: https://10.4.1.16:8200
+    VAULT_SKIP_VERIFY: 1
+
+  github:
+    owner: bodymindarts
+    repo:  shield-deployments
+
+    private_key: (( vault "secret/github:private" ))
+
+    # Optional branch to track for changes.
+    # (defaults to "master")
+    #branch: master
+
+  slack:
+    webhook: https://slack/web/hook/url
+    channel: '#name' # or '@user'
+
+    # Optional name/icon to use for posting the notification.
+    #username: runwaybot
+    #icon: http://ip.ad.dr.ess/of/icon.gif
+

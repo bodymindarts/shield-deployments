@@ -1,0 +1,11 @@
+alpha: bosh-lite/alpha
+sites:
+  aws:
+    auto:
+      staging: true
+      staging/: true
+    beta: staging
+  bosh-lite:
+    auto:
+      alpha: true
+
